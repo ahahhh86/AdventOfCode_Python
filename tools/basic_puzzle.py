@@ -44,18 +44,7 @@ class BasicPuzzle:
         self._tests = []
         self._results = []
 
-    def _read_file_as_lines(self) -> list[str]:
-        with self._filename.open('r') as file:
-            return file.read().splitlines()
-
-    def _read_file_each_char(self, type_=str) -> list[str]:
-        with self._filename.open('r') as file:
-            result = []
-            for line in file:
-                result.extend(type_(char) for char in line.rstrip())
-            return result
-
-    def _read_file(self, compile_data: callable(str) = lambda a: a):
+    def _read_file(self, compile_data: callable(str) = lambda line: line) -> tuple:
         with self._filename.open('r') as file:
             return tuple(
                 compile_data(line)
@@ -72,7 +61,7 @@ class BasicPuzzle:
         else:
             return str_colored('FAIL', self._FAIL_COLOR, color)
 
-    def _print_tests(self):
+    def _print_tests(self) -> None:
         def print_test(fn: FunctionData, test_number: int) -> bool:
             with _Timer() as timer:
                 result = fn.function(*fn.args)
@@ -124,9 +113,8 @@ class BasicPuzzle:
         result: FunctionData
         for index, result in enumerate(self._results, 1):
             print_result(result, index)
-            # print(f'Part {index}: {result.function(*result.args)}')
         print('\n')
 
-    def solve(self):
+    def solve(self) -> None:
         self._print_tests()
         self._print_results()
