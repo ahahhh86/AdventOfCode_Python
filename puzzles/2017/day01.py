@@ -55,12 +55,14 @@ What is the solution to your new captcha?
 
 Your puzzle answer was 1152.
 """
+
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
 
 def _compile_data(line: str) -> tuple[int, ...]:
     return tuple(int(char) for char in line)
+
 
 
 def _sum_digits(digits: tuple[int], fn: callable) -> int:
@@ -70,12 +72,15 @@ def _sum_digits(digits: tuple[int], fn: callable) -> int:
     return sum(digits[i] for i in range(length) if digits[i] == digits[fn(i, length)])
 
 
+
 def _sum_digits_part1(digits: tuple[int]) -> int:
     return _sum_digits(digits, lambda i, length: i + 1)
 
 
+
 def _sum_digits_part2(digits: tuple[int]) -> int:
     return _sum_digits(digits, lambda i, length: (i + length // 2) % length)
+
 
 
 class Puzzle(BasicPuzzle):
