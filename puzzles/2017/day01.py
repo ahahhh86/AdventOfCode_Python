@@ -55,41 +55,35 @@ What is the solution to your new captcha?
 
 Your puzzle answer was 1152.
 """
-from tools.basic_puzzle import BasicPuzzle
-from tools.basic_puzzle import FunctionData as Fd
+from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
 
 def _compile_data(line: str) -> tuple[int, ...]:
-    return tuple(int(i) for i in line)
-
+    return tuple(int(char) for char in line)
 
 
 def _sum_digits(digits: tuple[int], fn: callable) -> int:
     digits = list(digits)
     length = len(digits)
     digits.append(digits[0])
-    digits = [digits[i] for i in range(length) if digits[i] == digits[fn(i, length)]]
-    return sum(digits)
-
+    return sum(digits[i] for i in range(length) if digits[i] == digits[fn(i, length)])
 
 
 def _sum_digits_part1(digits: tuple[int]) -> int:
     return _sum_digits(digits, lambda i, length: i + 1)
 
 
-
 def _sum_digits_part2(digits: tuple[int]) -> int:
     return _sum_digits(digits, lambda i, length: (i + length // 2) % length)
-
 
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 1)
-        puzzle_input = self._read_file(_compile_data)[0]
+        puzzle_input = self.read_file(_compile_data)[0]
 
-        self._add_tests(
+        self.add_tests(
             [
                 Fd(3, _sum_digits_part1, ([1, 1, 2, 2],)),
                 Fd(4, _sum_digits_part1, ([1, 1, 1, 1],)),
@@ -104,5 +98,5 @@ class Puzzle(BasicPuzzle):
             ]
         )
 
-        self._add_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
-        self._add_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))
+        self.add_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
+        self.add_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))

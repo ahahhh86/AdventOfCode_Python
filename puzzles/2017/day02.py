@@ -51,8 +51,7 @@ What is the sum of each row's result in your puzzle input?
 Your puzzle answer was 275.
 """
 
-from tools.basic_puzzle import BasicPuzzle
-from tools.basic_puzzle import FunctionData as Fd
+from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
 
@@ -61,25 +60,27 @@ def _compile_data(line: str) -> tuple[int, ...]:
 
 
 
-def _calculate_checksum(value: list[list[int]]) -> int:
-    result = 0
-    for line in value:
-        difference = max(line) - min(line)
-        result += difference
-    return result
+def _calculate_checksum_part1(value: list[list[int]]) -> int:
+    return sum(
+        max(line) - min(line)
+        for line in value
+    )
 
 
 
-def _calculate_checksum2(value: list[list[int]]) -> int:
-    result = 0
-    for line in value:
+def _calculate_checksum_part2(value: list[list[int]]) -> int:
+    def _calculate_checksum(line: list[int]) -> int:
         dividable = []
         for i in line:
             for j in line:
                 if i != j and i % j == 0:
                     dividable.append(i // j)
-        result += sum(dividable)
-    return result
+        return sum(dividable)
+
+    return sum(
+        _calculate_checksum(line)
+        for line in value
+    )
 
 
 
@@ -103,14 +104,14 @@ class Puzzle(BasicPuzzle):
                 '3 8 6 5',
             ]
         )
-        puzzle_input = self._read_file(_compile_data)
+        puzzle_input = self.read_file(_compile_data)
 
-        self._add_tests(
+        self.add_tests(
             [
-                Fd(18, _calculate_checksum, (test_input1,)),
-                Fd(9, _calculate_checksum2, (test_input2,)),
+                Fd(18, _calculate_checksum_part1, (test_input1,)),
+                Fd(9, _calculate_checksum_part2, (test_input2,)),
             ]
         )
 
-        self._add_result(Fd(45351, _calculate_checksum, (puzzle_input,)))
-        self._add_result(Fd(275, _calculate_checksum2, (puzzle_input,)))
+        self.add_result(Fd(45351, _calculate_checksum_part1, (puzzle_input,)))
+        self.add_result(Fd(275, _calculate_checksum_part2, (puzzle_input,)))
