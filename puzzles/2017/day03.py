@@ -54,13 +54,9 @@ What is the first value written that is larger than your puzzle input?
 Your puzzle answer was 349975.
 """
 
-from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 from typing import Generator
 
-
-
-def _compile_data(line: str) -> int:
-    return int(line)
+from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
 
@@ -177,7 +173,7 @@ class Puzzle(BasicPuzzle):
             return s.get_last_sum()
 
         super().__init__(2017, 3)
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file(lambda line: int(line))[0]
 
         self.add_tests(
             [

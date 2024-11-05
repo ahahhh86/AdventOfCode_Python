@@ -40,11 +40,6 @@ from tools.generic_functions import count_if
 
 
 
-def _compile_data(line: str) -> tuple[str, ...]:
-    return tuple(line.split())
-
-
-
 def _count_valid_passphrases_part1(phrases: tuple[str, ...]) -> int:
     return count_if(lambda phrase: len(phrase) == len(set(phrase)), phrases)
 
@@ -66,7 +61,7 @@ def _count_valid_passphrases_part2(phrases: tuple[str, ...]) -> int:
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 4)
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file(lambda line: tuple(line.split()))
 
         self.add_tests(
             [
