@@ -59,49 +59,42 @@ Your puzzle answer was 1152.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-
-def _compile_data(line: str) -> tuple[int, ...]:
+def _compile_data(line: str) -> tuple:
     return tuple(int(char) for char in line)
 
 
-
-def _sum_digits(digits: tuple[int], fn: callable) -> int:
+def _sum_digits(digits: tuple, function: callable) -> int:
     digits = list(digits)
     length = len(digits)
     digits.append(digits[0])
-    return sum(digits[i] for i in range(length) if digits[i] == digits[fn(i, length)])
+    return sum(digits[i] for i in range(length) if digits[i] == digits[function(i, length)])
 
 
-
-def _sum_digits_part1(digits: tuple[int]) -> int:
+def _sum_digits_part1(digits: tuple) -> int:
     return _sum_digits(digits, lambda i, length: i + 1)
 
 
-
-def _sum_digits_part2(digits: tuple[int]) -> int:
+def _sum_digits_part2(digits: tuple) -> int:
     return _sum_digits(digits, lambda i, length: (i + length // 2) % length)
-
 
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 1)
+
+    def _test_puzzle(self) -> None:
+        self._print_test(Fd(3, _sum_digits_part1, ([1, 1, 2, 2],)))
+        self._print_test(Fd(4, _sum_digits_part1, ([1, 1, 1, 1],)))
+        self._print_test(Fd(0, _sum_digits_part1, ([1, 2, 3, 4],)))
+        self._print_test(Fd(9, _sum_digits_part1, ([9, 1, 2, 1, 2, 1, 2, 9],)))
+        print()
+        self._print_test(Fd(6, _sum_digits_part2, ([1, 2, 1, 2],)))
+        self._print_test(Fd(0, _sum_digits_part2, ([1, 2, 2, 1],)))
+        self._print_test(Fd(4, _sum_digits_part2, ([1, 2, 3, 4, 2, 5],)))
+        self._print_test(Fd(12, _sum_digits_part2, ([1, 2, 3, 1, 2, 3],)))
+        self._print_test(Fd(4, _sum_digits_part2, ([1, 2, 1, 3, 1, 4, 1, 5],)))
+
+    def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file(_compile_data)[0]
-
-        self.add_tests(
-            [
-                Fd(3, _sum_digits_part1, ([1, 1, 2, 2],)),
-                Fd(4, _sum_digits_part1, ([1, 1, 1, 1],)),
-                Fd(0, _sum_digits_part1, ([1, 2, 3, 4],)),
-                Fd(9, _sum_digits_part1, ([9, 1, 2, 1, 2, 1, 2, 9],)),
-                None,
-                Fd(6, _sum_digits_part2, ([1, 2, 1, 2],)),
-                Fd(0, _sum_digits_part2, ([1, 2, 2, 1],)),
-                Fd(4, _sum_digits_part2, ([1, 2, 3, 4, 2, 5],)),
-                Fd(12, _sum_digits_part2, ([1, 2, 3, 1, 2, 3],)),
-                Fd(4, _sum_digits_part2, ([1, 2, 1, 3, 1, 4, 1, 5],)),
-            ]
-        )
-
-        self.add_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
-        self.add_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))
+        self._print_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
+        self._print_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))

@@ -52,10 +52,8 @@ Your puzzle answer was 1610.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-
 def _compile_data(line: str) -> list[int]:
     return [int(i) for i in line.split()]
-
 
 
 def _reallocate_one_block(blocks: list):
@@ -70,7 +68,6 @@ def _reallocate_one_block(blocks: list):
         blocks[i % length] += 1
 
 
-
 def _reallocate_memory(blocks: list):
     configurations = []
     while blocks not in configurations:
@@ -79,19 +76,18 @@ def _reallocate_memory(blocks: list):
     return len(configurations)
 
 
-
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 6)
+
+    def _test_puzzle(self) -> None:
         test_input = [0, 2, 7, 0]
-        puzzle_input = self.read_file(_compile_data)
+        self._print_test(Fd(5, _reallocate_memory, (test_input,)))
+        self._print_test(Fd(4, _reallocate_memory, (test_input,)))
 
-        self.add_tests(
-            [
-                Fd(5, _reallocate_memory, (test_input,)),
-                Fd(4, _reallocate_memory, (test_input,)),
-            ]
-        )
-
-        self.add_result(Fd(3156, _reallocate_memory, (puzzle_input,)))
-        self.add_result(Fd(1610, _reallocate_memory, (puzzle_input,)))
+    def _solve_puzzle(self) -> None:
+        puzzle_input = self.read_file(_compile_data)[0]
+        self._print_result(Fd(3156, _reallocate_memory, (puzzle_input,)))
+        # to get the length of the loop we need to be inside the loop and check when it repeats
+        # so: do the same we did in part one, but after blocks is modified at part one
+        self._print_result(Fd(1610, _reallocate_memory, (puzzle_input,)))

@@ -16,10 +16,8 @@ def get_color(color: str) -> str:
         return color_switch['reset']
 
 
-
 def str_colored(value: str, color: str, default: str = 'reset') -> str:
     return f'{get_color(color)}{value}{get_color(default)}'
-
 
 
 def print_colored(value: str, color: str) -> None:

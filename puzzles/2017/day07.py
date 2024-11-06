@@ -53,10 +53,7 @@ def _compile_data(line: str) -> _Tower:
 
 
 class Puzzle(BasicPuzzle):
-    def __init__(self) -> None:
-        super().__init__(2017, 7)
-        puzzle_input = self.read_file(_compile_data)
-
+    def _test_puzzle(self) -> None:
         puzzle_test = list(map(
             _compile_data,
             [
@@ -75,17 +72,12 @@ class Puzzle(BasicPuzzle):
             'cntj (57)',
         ]))
         t = _Towers(puzzle_test)
-        print(t.find_first_parent(), 'tknk')
+        self._print_test(Fd('tknk', t.find_first_parent, ()))
 
+    def _solve_puzzle(self) -> None:
+        puzzle_input = self.read_file(_compile_data)
         t = _Towers(puzzle_input)
-        print(t.find_first_parent(), 'hlqnsbe')
+        self._print_result(Fd('hlqnsbe', t.find_first_parent, ()))
 
-
-        # self.add_tests(
-        #     [
-        #         Fd(3, _sum_digits_part1, ([1, 1, 2, 2],)),
-        #     ]
-        # )
-        #
-        # self.add_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
-        # self.add_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))
+    def __init__(self) -> None:
+        super().__init__(2017, 7)

@@ -1,18 +1,17 @@
+import itertools
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from itertools import count
 from pathlib import Path
 from time import perf_counter_ns
 
 from tools.colors import print_colored, str_colored
 
 
-
 @dataclass
 class FunctionData:
-    expected: int
+    expected: int | str
     function: callable
     args: tuple
-
 
 
 class _Timer:
@@ -28,8 +27,7 @@ class _Timer:
         return self._time // ns_to_ms
 
 
-
-class BasicPuzzle:
+class BasicPuzzle(ABC):
     _TEST_COLOR = 'yellow'
     _RESULT_COLOR = 'reset'
     _PASS_COLOR = 'green'
@@ -39,8 +37,9 @@ class BasicPuzzle:
     def __init__(self, year: int, day: int):
         print(f'Year {year:04d} Day {day:02d}')
         self._filename = Path(__file__).parent / Path(f'../input/{year:04d}/day{day:02d}.txt')
-        self._tests = []
-        self._results = []
+        self._test_number = itertools.count(1)
+        self._failed_tests = 0
+        self._result_number = itertools.count(1)
 
     def read_file(self, compile_data: callable(str) = lambda line: line) -> tuple:
         with self._filename.open('r') as file:
@@ -48,13 +47,6 @@ class BasicPuzzle:
                 compile_data(line)
                 for line in file.read().splitlines()
             )
-
-    def add_tests(self, tests: list[FunctionData]):
-        if __debug__:
-            self._tests.extend(tests)
-
-    def add_result(self, result: FunctionData) -> None:
-        self._results.append(result)
 
     @classmethod
     def _test_function(cls, fn: FunctionData, number: int, start_str: str, color: str) -> bool:
@@ -81,37 +73,39 @@ class BasicPuzzle:
         )
         return success
 
-    def _print_tests(self) -> None:
-        if not self._tests:
-            return
-
+    @classmethod
+    def _start_test(cls) -> None:
         print_colored(
-            self._RESULT_FORMAT.format(f'  Test #', 'result', 'expected', 'time'),
-            self._TEST_COLOR
+            cls._RESULT_FORMAT.format(f'  Test #', 'result', 'expected', 'time'),
+            cls._TEST_COLOR
         )
 
-        fail_count = 0
-        index = count(1)
-        test: FunctionData
-        for test in self._tests:
-            if test is None:
-                print()
-            elif not self._test_function(test, next(index), '  Test', self._TEST_COLOR):
-                fail_count += 1
+    def _print_test(self, fn: FunctionData) -> None:
+        if not self._test_function(fn, next(self._test_number), '  Test', self._TEST_COLOR):
+            self._failed_tests += 1
 
-        if fail_count == 0:
+    def _end_test(self) -> None:
+        if self._failed_tests == 0:
             print_colored('All tests passed', self._PASS_COLOR)
         else:
-            print_colored(f'{fail_count} tests failed', self._FAIL_COLOR)
+            print_colored(f'{self._failed_tests} tests failed', self._FAIL_COLOR)
         print()
 
-    def _print_results(self) -> None:
-        result: FunctionData
-        index = count(1)
-        for result in self._results:
-            self._test_function(result, next(index), 'Part', self._RESULT_COLOR)
-        print('\n')
+    def _print_result(self, fn: FunctionData):
+        self._test_function(fn, next(self._result_number), 'Part', self._RESULT_COLOR)
+
+    @abstractmethod
+    def _test_puzzle(self) -> None:
+        pass
+
+    @abstractmethod
+    def _solve_puzzle(self) -> None:
+        pass
 
     def solve(self) -> None:
-        self._print_tests()
-        self._print_results()
+        if __debug__:
+            self._start_test()
+            self._test_puzzle()
+            self._end_test()
+
+        self._solve_puzzle()

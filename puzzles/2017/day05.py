@@ -52,7 +52,6 @@ Your puzzle answer was 21841249.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-
 class _JumpIndex:
     def __init__(self) -> None:
         self.index = 0
@@ -63,11 +62,11 @@ class _JumpIndex:
         self.steps += 1
 
 
-
 def _jump(instructions: tuple[int, ...], decrease_width: int = None) -> int:
     instructions = list(instructions)
     length = len(instructions)
     if decrease_width is None:
+        # this jump would go out of the list, so it does not matter what happens with the start position
         decrease_width = length
 
     jumper = _JumpIndex()
@@ -81,18 +80,16 @@ def _jump(instructions: tuple[int, ...], decrease_width: int = None) -> int:
     return jumper.steps
 
 
-
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 5)
+
+    def _test_puzzle(self) -> None:
+        test_input = (0, 3, 0, 1, -3)
+        self._print_test(Fd(5, _jump, (test_input,)))
+        self._print_test(Fd(10, _jump, (test_input, 3)))
+
+    def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file(lambda i: int(i))
-
-        self.add_tests(
-            [
-                Fd(5, _jump, ((0, 3, 0, 1, -3),)),
-                Fd(10, _jump, ((0, 3, 0, 1, -3), 3)),
-            ]
-        )
-
-        self.add_result(Fd(326618, _jump, (puzzle_input,)))
-        self.add_result(Fd(21841249, _jump, (puzzle_input, 3)))
+        self._print_result(Fd(326618, _jump, (puzzle_input,)))
+        self._print_result(Fd(21841249, _jump, (puzzle_input, 3)))

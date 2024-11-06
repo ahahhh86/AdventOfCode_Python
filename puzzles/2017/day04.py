@@ -39,10 +39,8 @@ from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 from tools.generic_functions import count_if
 
 
-
 def _count_valid_passphrases_part1(phrases: tuple[str, ...]) -> int:
     return count_if(lambda phrase: len(phrase) == len(set(phrase)), phrases)
-
 
 
 def _count_valid_passphrases_part2(phrases: tuple[str, ...]) -> int:
@@ -57,25 +55,22 @@ def _count_valid_passphrases_part2(phrases: tuple[str, ...]) -> int:
     return count_if(_is_valid, phrases)
 
 
-
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2017, 4)
+
+    def _test_puzzle(self) -> None:
+        self._print_test(Fd(1, _count_valid_passphrases_part1, ([('aa,' 'bb', 'cc', 'dd', 'ee',)],)))
+        self._print_test(Fd(0, _count_valid_passphrases_part1, ([('aa', 'bb', 'cc', 'dd', 'aa',)],)))
+        self._print_test(Fd(1, _count_valid_passphrases_part1, ([('aa', 'bb', 'cc', 'dd', 'aaa',)],)))
+        print()
+        self._print_test(Fd(1, _count_valid_passphrases_part2, ([('abcde', 'fghij',)],)))
+        self._print_test(Fd(0, _count_valid_passphrases_part2, ([('abcde', 'xyz', 'ecdab',)],)))
+        self._print_test(Fd(1, _count_valid_passphrases_part2, ([('a', 'ab', 'abc', 'abd', 'abf', 'abj',)],)))
+        self._print_test(Fd(1, _count_valid_passphrases_part2, ([('iiii', 'oiii', 'ooii', 'oooi', 'oooo',)],)))
+        self._print_test(Fd(0, _count_valid_passphrases_part2, ([('oiii', 'ioii', 'iioi', 'iiio',)],)))
+
+    def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file(lambda line: tuple(line.split()))
-
-        self.add_tests(
-            [
-                Fd(1, _count_valid_passphrases_part1, ([('aa,' 'bb', 'cc', 'dd', 'ee',)],)),
-                Fd(0, _count_valid_passphrases_part1, ([('aa', 'bb', 'cc', 'dd', 'aa',)],)),
-                Fd(1, _count_valid_passphrases_part1, ([('aa', 'bb', 'cc', 'dd', 'aaa',)],)),
-                None,
-                Fd(1, _count_valid_passphrases_part2, ([('abcde', 'fghij',)],)),
-                Fd(0, _count_valid_passphrases_part2, ([('abcde', 'xyz', 'ecdab',)],)),
-                Fd(1, _count_valid_passphrases_part2, ([('a', 'ab', 'abc', 'abd', 'abf', 'abj',)],)),
-                Fd(1, _count_valid_passphrases_part2, ([('iiii', 'oiii', 'ooii', 'oooi', 'oooo',)],)),
-                Fd(0, _count_valid_passphrases_part2, ([('oiii', 'ioii', 'iioi', 'iiio',)],)),
-            ]
-        )
-
-        self.add_result(Fd(383, _count_valid_passphrases_part1, (puzzle_input,)))
-        self.add_result(Fd(265, _count_valid_passphrases_part2, (puzzle_input,)))
+        self._print_result(Fd(383, _count_valid_passphrases_part1, (puzzle_input,)))
+        self._print_result(Fd(265, _count_valid_passphrases_part2, (puzzle_input,)))

@@ -57,7 +57,7 @@ Your puzzle answer was 349975.
 from typing import Generator
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-
+from tools.point import Point
 
 
 class _Spiral:
@@ -65,7 +65,13 @@ class _Spiral:
     _LEFT = 'left'
     _UP = 'top'
     _DOWN = 'down'
-
+    _START_POS = Point(0, 0)
+    _INVALID_SUM = -1
+    _ADJACENT_POSITIONS = (
+        Point(-1, -1), Point(0, -1), Point(1, -1),
+        Point(-1, 0), Point(1, 0),  # (0, 0) is excluded
+        Point(-1, 1), Point(0, 1), Point(1, 1),
+    )
 
 
     class _DirectionGenerator:
@@ -83,7 +89,6 @@ class _Spiral:
             return next(self._generator)
 
 
-
     class _StepGenerator:
         def __init__(self) -> None:
             def _generate() -> Generator[int, None, None]:
@@ -99,97 +104,95 @@ class _Spiral:
             return next(self._generator)
 
 
-
     def __init__(self, field_count: int) -> None:
         self._field_count = field_count
-        self._fields = {(0, 0): 1}
-        self._position = [0, 0]
-        self._last_sum = -1
+        self._fields = {self._START_POS: 1}
+        self._position = self._START_POS
+        self._min_larger_sum = self._INVALID_SUM  # minimum sum that is larger than field_count
+
+    def get_distance(self) -> int:
+        self._create_spiral()
+        return abs(self._position)
+
+    def min_larger_sum(self) -> int:
+        if self._min_larger_sum == self._INVALID_SUM:
+            self._create_spiral()
+        return self._min_larger_sum
 
     def _create_spiral(self) -> None:
-        generate_directions = self._DirectionGenerator()
+        def set_next_position(d: str) -> None:
+            match d:
+                case self._RIGHT:
+                    self._position += (+1, 0)
+                case self._LEFT:
+                    self._position += (-1, 0)
+                case self._UP:
+                    self._position += (0, -1)
+                case self._DOWN:
+                    self._position += (0, +1)
+
+        def add_sum_of_adjacent() -> None:
+            # we do not need any more sums after we found one big enough
+            # makes the program a lot faster
+            if self._min_larger_sum != self._INVALID_SUM:
+                return
+            adjacent_sum = 0
+            for pos in self._ADJACENT_POSITIONS:
+                try:
+                    adjacent_sum += self._fields[self._position + pos]
+                except KeyError:
+                    pass  # if field does not exist, do not add anything
+            # noinspection PyTypeChecker
+            # Expected type 'tuple[int, int]', got 'tuple[int, ...]' instead
+            self._fields[self._position] = adjacent_sum
+            if adjacent_sum >= self._field_count:
+                self._min_larger_sum = adjacent_sum
+
+        generate_direction = self._DirectionGenerator()
         generate_steps = self._StepGenerator()
         count = 1
 
+        # loop over the directions right, up, left, down, right, ...
         while True:
-            direction = generate_directions()
+            direction = generate_direction()
             steps = generate_steps()
 
+            # loop over each step in one direction
             for _ in range(steps):
                 if count >= self._field_count:
                     return
                 count += 1
-                adjacent_sum = self._next_pos(direction)
-                if self._last_sum < 0 and adjacent_sum >= self._field_count:
-                    self._last_sum = adjacent_sum
-
-    def _next_pos(self, direction: str) -> int:
-        match direction:
-            case self._RIGHT:
-                self._position[0] += 1
-            case self._LEFT:
-                self._position[0] -= 1
-            case self._UP:
-                self._position[1] -= 1
-            case self._DOWN:
-                self._position[1] += 1
-
-        return self._add_sum_of_adjacent()
-
-    def get_distance(self) -> int:
-        self._create_spiral()
-        return abs(self._position[0]) + abs(self._position[1])
-
-    def _add_sum_of_adjacent(self) -> int:
-        pos = tuple(self._position)
-        sum_ = 0
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if i == 0 and j == 0:
-                    continue
-                try:
-                    sum_ += self._fields[pos[0] + i, pos[1] + j]
-                except KeyError:
-                    pass
-
-        self._fields[pos] = sum_
-        return sum_
-
-    def get_last_sum(self):
-        if self._last_sum == -1:
-            self._create_spiral()
-        return self._last_sum
-
+                set_next_position(direction)
+                add_sum_of_adjacent()
 
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
-        def test_part1(i: int):
-            s = _Spiral(i)
-            return s.get_distance()
-
-        def test_part2(i: int):
-            s = _Spiral(i)
-            return s.get_last_sum()
-
         super().__init__(2017, 3)
+
+    def _test_puzzle(self) -> None:
+        def test_spiral_distance(i: int) -> int:
+            spiral = _Spiral(i)
+            return spiral.get_distance()
+
+        def test_spiral_sum(i: int) -> int:
+            spiral = _Spiral(i)
+            return spiral.min_larger_sum()
+
+        self._print_test(Fd(0, test_spiral_distance, (1,)))
+        self._print_test(Fd(3, test_spiral_distance, (12,)))
+        self._print_test(Fd(2, test_spiral_distance, (23,)))
+        self._print_test(Fd(31, test_spiral_distance, (1024,)))
+        print()
+        # Tests 1 to 3 will fail even if the spiral creation works fine
+        # self._print_test(Fd(1, test_spiral_sum, (1,)))  # no need to create the spiral => no sum returned
+        # self._print_test(Fd(1, test_spiral_sum, (2,)))  # all sums < 2
+        # self._print_test(Fd(2, test_spiral_sum, (3,)))  # all sums < 3
+        self._print_test(Fd(4, test_spiral_sum, (4,)))
+        self._print_test(Fd(5, test_spiral_sum, (5,)))
+
+    def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file(lambda line: int(line))[0]
-
-        self.add_tests(
-            [
-                Fd(0, test_part1, (1,)),
-                Fd(3, test_part1, (12,)),
-                Fd(2, test_part1, (23,)),
-                Fd(31, test_part1, (1024,)),
-                None,
-                # Fd(1, test_part2, (1,)),
-                # Fd(1, test_part2, (2,)),
-                # Fd(2, test_part2, (3,)),
-                Fd(4, test_part2, (4,)),
-                Fd(5, test_part2, (5,)),
-            ]
-        )
-
-        sp = _Spiral(puzzle_input)
-        self.add_result(Fd(480, _Spiral.get_distance, (sp,)))
-        self.add_result(Fd(349975, _Spiral.get_last_sum, (sp,)))
+        spiral = _Spiral(puzzle_input)
+        self._print_result(Fd(480, _Spiral.get_distance, (spiral,)))
+        self._print_result(Fd(349975, _Spiral.min_larger_sum, (spiral,)))
