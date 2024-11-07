@@ -1,5 +1,4 @@
 import importlib
-import random
 
 
 def solve_puzzle(year: int, day: int) -> None:
