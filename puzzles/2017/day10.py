@@ -1,4 +1,4 @@
-"""
+r"""
 --- Day 10: Knot Hash ---
 You come across some programs that are trying to implement a software emulation of a hash based on knot-tying.
 The hash these programs are implementing isn't very strong, but you decide to help them anyway. You make
@@ -116,12 +116,17 @@ Ignore any leading or trailing whitespace you might encounter.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-def _compile_data(line: str) -> tuple:
+def _compile_data_part1(line: str) -> tuple:
     return tuple(int(i) for i in line.split(','))
+
+
+def _compile_data_part2(line: str) -> tuple:
+    return tuple(ord(c) for c in line) + (17, 31, 73, 47, 23)
 
 
 class _ListOfNumbers:
     def __init__(self, lengths: tuple[int, ...], size: int = 256) -> None:
+        self._size = size
         self._list = list(range(size))
         self._current_position = 0
         self._skip_size = 0
@@ -139,15 +144,34 @@ class _ListOfNumbers:
             return
 
         for i in range(length // 2):
-            i1 = (i + self._current_position) % len(self._list)
-            i2 = (self._current_position + length - i - 1) % len(self._list)
+            i1 = (i + self._current_position) % self._size
+            i2 = (self._current_position + length - i - 1) % self._size
             self._list[i1], self._list[i2] = self._list[i2], self._list[i1]
 
     def _get_new_list(self, length: int) -> None:
         self._reverse(length)
         self._current_position += length + self._skip_size
-        self._current_position %= len(self._list)
+        self._current_position %= self._size
         self._skip_size += 1
+
+
+def _xor_elements(l: list | tuple):
+    g = (i for i in l)
+    result = next(g)
+    for i in g:
+        result ^= i
+    return result
+
+
+def _xor_list(l: list | tuple):
+    result = []
+    for i in range(16):
+        result.append(_xor_elements(l[i * 16:(i + 1) * 16]))
+    return result
+
+
+def get_hex(l: list | tuple):
+    return ''.join([f"{i:02x}" for i in _xor_list(l)])
 
 
 class Puzzle(BasicPuzzle):
@@ -160,10 +184,27 @@ class Puzzle(BasicPuzzle):
             l.run()
             return l.multiply_first_two()
 
+        def _test_p2(lengths):
+            l = _ListOfNumbers(_compile_data_part2(lengths))
+            for _ in range(64):
+                l.run()
+            return get_hex(l._list)
+
         self._print_test(Fd(12, _test_p1, ((3, 4, 1, 5),)))
+        print()
+        self._print_test(Fd('a2582a3a0e66e6e86e3812dcb672a272', _test_p2, ('',)))
+        self._print_test(Fd('33efeb34ea91902bb2f59c9920caa6cd', _test_p2, ('AoC 2017',)))
+        self._print_test(Fd('3efbe78a8d82f29979031a4aa0b16a9d', _test_p2, ('1,2,3',)))
+        self._print_test(Fd('63960835bcdc130f0b66d7ff4f6a5a8e', _test_p2, ('1,2,4',)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file(_compile_data_part1)[0]
         l = _ListOfNumbers(puzzle_input)
         l.run()
         self._print_result(Fd(6952, l.multiply_first_two, ()))
+
+        puzzle_input2 = _compile_data_part2(self.read_file()[0])
+        l = _ListOfNumbers(puzzle_input2)
+        for _ in range(64):
+            l.run()
+        self._print_result(Fd("28e7c4360520718a5dc811d3942cf1fd", get_hex, (l._list,)))
