@@ -111,7 +111,9 @@ Here are some example hashes:
 Treating your puzzle input as a string of ASCII characters, what is the Knot Hash of your puzzle input?
 Ignore any leading or trailing whitespace you might encounter.
 
+Your puzzle answer was 28e7c4360520718a5dc811d3942cf1fd.
 """
+from functools import reduce
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
@@ -121,7 +123,8 @@ def _compile_data_part1(line: str) -> tuple:
 
 
 def _compile_data_part2(line: str) -> tuple:
-    return tuple(ord(c) for c in line) + (17, 31, 73, 47, 23)
+    ADD_SEQUENCE = (17, 31, 73, 47, 23)
+    return tuple(ord(c) for c in line) + ADD_SEQUENCE
 
 
 class _ListOfNumbers:
@@ -132,20 +135,38 @@ class _ListOfNumbers:
         self._skip_size = 0
         self._lengths = lengths
 
-    def run(self):
-        for i in self._lengths:
-            self._get_new_list(i)
+    def run(self, count: int = 1):
+        for _ in range(count):
+            for i in self._lengths:
+                self._get_new_list(i)
 
     def multiply_first_two(self):
         return self._list[0] * self._list[1]
+
+    def get_hex(self):
+        def _xor_of_list(l: list[int]) -> int:
+            return reduce(lambda a, b: a ^ b, l)
+
+        def _create_dense_hash(l: list[int]):
+            CHUNK_SIZE = 16
+            assert CHUNK_SIZE * CHUNK_SIZE == self._size
+            result = []
+            for i in range(CHUNK_SIZE):
+                # @formatter:off
+                partial_list = l[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE]
+                # @formatter:on
+                result.append(_xor_of_list(partial_list))
+            return result
+
+        return ''.join([f"{i:02x}" for i in _create_dense_hash(self._list)])
 
     def _reverse(self, length: int) -> None:
         if length <= 1:
             return
 
         for i in range(length // 2):
-            i1 = (i + self._current_position) % self._size
-            i2 = (self._current_position + length - i - 1) % self._size
+            i1 = (self._current_position + i) % self._size
+            i2 = (self._current_position - i + length - 1) % self._size
             self._list[i1], self._list[i2] = self._list[i2], self._list[i1]
 
     def _get_new_list(self, length: int) -> None:
@@ -153,25 +174,6 @@ class _ListOfNumbers:
         self._current_position += length + self._skip_size
         self._current_position %= self._size
         self._skip_size += 1
-
-
-def _xor_elements(l: list | tuple):
-    g = (i for i in l)
-    result = next(g)
-    for i in g:
-        result ^= i
-    return result
-
-
-def _xor_list(l: list | tuple):
-    result = []
-    for i in range(16):
-        result.append(_xor_elements(l[i * 16:(i + 1) * 16]))
-    return result
-
-
-def get_hex(l: list | tuple):
-    return ''.join([f"{i:02x}" for i in _xor_list(l)])
 
 
 class Puzzle(BasicPuzzle):
@@ -186,9 +188,8 @@ class Puzzle(BasicPuzzle):
 
         def _test_p2(lengths):
             l = _ListOfNumbers(_compile_data_part2(lengths))
-            for _ in range(64):
-                l.run()
-            return get_hex(l._list)
+            l.run(64)
+            return l.get_hex()
 
         self._print_test(Fd(12, _test_p1, ((3, 4, 1, 5),)))
         print()
@@ -205,6 +206,5 @@ class Puzzle(BasicPuzzle):
 
         puzzle_input2 = _compile_data_part2(self.read_file()[0])
         l = _ListOfNumbers(puzzle_input2)
-        for _ in range(64):
-            l.run()
-        self._print_result(Fd("28e7c4360520718a5dc811d3942cf1fd", get_hex, (l._list,)))
+        l.run(64)
+        self._print_result(Fd("28e7c4360520718a5dc811d3942cf1fd", l.get_hex, ()))
