@@ -59,20 +59,21 @@ import re
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-def _multiply(data: str) -> int:
+def _scan_memory(memory: str) -> int:
     pattern = re.compile(r"mul\((\d{1,3}),(\d{1,3})\)")
-    numbers = re.findall(pattern, data)
+    numbers = re.findall(pattern, memory)
     return sum(int(a) * int(b) for a, b in numbers)
 
 
-def _multiply2(data: str) -> int:
+def _scan_with_conditions(memory: str) -> int:
     pattern = re.compile(r"(do\(\)|don't\(\))")
-    strings = ["do()"] + re.split(pattern, data)
-    assert len(strings) % 2 == 0
+    split_memory = ["do()"] + re.split(pattern, memory)
+    assert len(split_memory) % 2 == 0
+
     result = 0
-    for i in range(0, len(strings), 2):
-        if strings[i] == "do()":
-            result += _multiply(strings[i + 1])
+    for i in range(0, len(split_memory), 2):
+        if split_memory[i] == "do()":
+            result += _scan_memory(split_memory[i + 1])
     return result
 
 
@@ -82,13 +83,21 @@ class Puzzle(BasicPuzzle):
 
     def _test_puzzle(self) -> None:
         self._print_test(
-            Fd(161, _multiply, ("xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))",))
+            Fd(
+                161,
+                _scan_memory,
+                ("xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))",)
+            )
         )
         self._print_test(
-            Fd(48, _multiply2, ("xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",))
+            Fd(
+                48,
+                _scan_with_conditions,
+                ("xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",)
+            )
         )
 
     def _solve_puzzle(self) -> None:
         puzzle_input = ' '.join(self.read_file())  # input has multiple lines
-        self._print_result(Fd(167650499, _multiply, (puzzle_input,)))
-        self._print_result(Fd(95846796, _multiply2, (puzzle_input,)))
+        self._print_result(Fd(167650499, _scan_memory, (puzzle_input,)))
+        self._print_result(Fd(95846796, _scan_with_conditions, (puzzle_input,)))
