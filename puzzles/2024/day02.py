@@ -76,7 +76,7 @@ def _compile_data(line: str) -> tuple[int, ...]:
     return tuple(int(i) for i in line.split())
 
 
-def _is_report_save(report: tuple[int, ...]) -> bool:
+def _is_report_save_part1(report: tuple[int, ...]) -> bool:
     report = list(report)
 
     if sorted(report) != report and sorted(report, reverse=True) != report:
@@ -89,12 +89,12 @@ def _is_report_save(report: tuple[int, ...]) -> bool:
     return True
 
 
-def _is_report_save2(report: tuple[int, ...]) -> bool:
-    if _is_report_save(report):
+def _is_report_save_part2(report: tuple[int, ...]) -> bool:
+    if _is_report_save_part1(report):
         return True
 
     for i in range(len(report)):
-        if _is_report_save(report[:i] + report[i + 1:]):
+        if _is_report_save_part1(report[:i] + report[i + 1:]):
             return True
     return False
 
@@ -116,23 +116,23 @@ class Puzzle(BasicPuzzle):
             (8, 6, 4, 4, 1),
             (1, 3, 6, 7, 9),
         )
-        self._print_test(Fd(True, _is_report_save, (test_input[0],)))
-        self._print_test(Fd(False, _is_report_save, (test_input[1],)))
-        self._print_test(Fd(False, _is_report_save, (test_input[2],)))
-        self._print_test(Fd(False, _is_report_save, (test_input[3],)))
-        self._print_test(Fd(False, _is_report_save, (test_input[4],)))
-        self._print_test(Fd(True, _is_report_save, (test_input[5],)))
-        self._print_test(Fd(2, _count_save_reports, (test_input, _is_report_save)))
+        self._print_test(Fd(True, _is_report_save_part1, (test_input[0],)))
+        self._print_test(Fd(False, _is_report_save_part1, (test_input[1],)))
+        self._print_test(Fd(False, _is_report_save_part1, (test_input[2],)))
+        self._print_test(Fd(False, _is_report_save_part1, (test_input[3],)))
+        self._print_test(Fd(False, _is_report_save_part1, (test_input[4],)))
+        self._print_test(Fd(True, _is_report_save_part1, (test_input[5],)))
+        self._print_test(Fd(2, _count_save_reports, (test_input, _is_report_save_part1)))
         print()
-        self._print_test(Fd(True, _is_report_save2, (test_input[0],)))
-        self._print_test(Fd(False, _is_report_save2, (test_input[1],)))
-        self._print_test(Fd(False, _is_report_save2, (test_input[2],)))
-        self._print_test(Fd(True, _is_report_save2, (test_input[3],)))
-        self._print_test(Fd(True, _is_report_save2, (test_input[4],)))
-        self._print_test(Fd(True, _is_report_save2, (test_input[5],)))
-        self._print_test(Fd(4, _count_save_reports, (test_input, _is_report_save2)))
+        self._print_test(Fd(True, _is_report_save_part2, (test_input[0],)))
+        self._print_test(Fd(False, _is_report_save_part2, (test_input[1],)))
+        self._print_test(Fd(False, _is_report_save_part2, (test_input[2],)))
+        self._print_test(Fd(True, _is_report_save_part2, (test_input[3],)))
+        self._print_test(Fd(True, _is_report_save_part2, (test_input[4],)))
+        self._print_test(Fd(True, _is_report_save_part2, (test_input[5],)))
+        self._print_test(Fd(4, _count_save_reports, (test_input, _is_report_save_part2)))
 
     def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file(_compile_data)
-        self._print_result(Fd(246, _count_save_reports, (puzzle_input, _is_report_save)))
-        self._print_result(Fd(318, _count_save_reports, (puzzle_input, _is_report_save2)))
+        self._print_result(Fd(246, _count_save_reports, (puzzle_input, _is_report_save_part1)))
+        self._print_result(Fd(318, _count_save_reports, (puzzle_input, _is_report_save_part2)))

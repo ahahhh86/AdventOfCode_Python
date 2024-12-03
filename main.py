@@ -7,4 +7,4 @@ def solve_puzzle(year: int, day: int) -> None:
 
 
 if __name__ == '__main__':
-    solve_puzzle(2024, 2)
+    solve_puzzle(2024, 3)
