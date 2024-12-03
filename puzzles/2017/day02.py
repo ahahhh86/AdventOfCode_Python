@@ -54,19 +54,19 @@ Your puzzle answer was 275.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-def _compile_data(line: str) -> tuple:
+def _compile_data(line: str) -> tuple[int, ...]:
     return tuple(int(i) for i in line.split())
 
 
-def _calculate_checksum_part1(value: tuple[tuple]) -> int:
+def _calculate_checksum_part1(value: tuple[tuple[int, ...]]) -> int:
     return sum(
         max(line) - min(line)
         for line in value
     )
 
 
-def _calculate_checksum_part2(value: tuple[tuple]) -> int:
-    def _calculate_checksum(line: tuple) -> int:
+def _calculate_checksum_part2(value: tuple[tuple[int, ...]]) -> int:
+    def _calculate_checksum(line: tuple[int, ...]) -> int:
         dividable = []
         for i in line:
             for j in line:
@@ -106,6 +106,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(9, _calculate_checksum_part2, (test_input2,)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file_lines(_compile_data)
         self._print_result(Fd(45351, _calculate_checksum_part1, (puzzle_input,)))
         self._print_result(Fd(275, _calculate_checksum_part2, (puzzle_input,)))

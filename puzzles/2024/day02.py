@@ -133,6 +133,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(4, _count_save_reports, (test_input, _is_report_save_part2)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file_lines(_compile_data)
         self._print_result(Fd(246, _count_save_reports, (puzzle_input, _is_report_save_part1)))
         self._print_result(Fd(318, _count_save_reports, (puzzle_input, _is_report_save_part2)))

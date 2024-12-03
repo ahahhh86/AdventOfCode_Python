@@ -59,22 +59,21 @@ Your puzzle answer was 1152.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-def _compile_data(line: str) -> tuple:
+def _compile_data(line: str) -> tuple[int, ...]:
     return tuple(int(char) for char in line)
 
 
 def _sum_digits(digits: tuple, function: callable) -> int:
-    digits = list(digits)
     length = len(digits)
-    digits.append(digits[0])
+    digits += (digits[0],)
     return sum(digits[i] for i in range(length) if digits[i] == digits[function(i, length)])
 
 
-def _sum_digits_part1(digits: tuple) -> int:
+def _sum_digits_part1(digits: tuple[int, ...]) -> int:
     return _sum_digits(digits, lambda i, length: i + 1)
 
 
-def _sum_digits_part2(digits: tuple) -> int:
+def _sum_digits_part2(digits: tuple[int, ...]) -> int:
     return _sum_digits(digits, lambda i, length: (i + length // 2) % length)
 
 
@@ -95,6 +94,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(4, _sum_digits_part2, ([1, 2, 1, 3, 1, 4, 1, 5],)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file(_compile_data)
         self._print_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))
         self._print_result(Fd(1152, _sum_digits_part2, (puzzle_input,)))

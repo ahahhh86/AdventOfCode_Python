@@ -44,5 +44,5 @@ class Puzzle(BasicPuzzle):
         # self._print_test(Fd(3, _sum_digits_part1, ([1, 1, 2, 2],)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file_lines(_compile_data)[0]
         # self._print_result(Fd(1182, _sum_digits_part1, (puzzle_input,)))

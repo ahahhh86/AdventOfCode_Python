@@ -36,28 +36,23 @@ Your puzzle answer was 6056.
 """
 
 from collections import defaultdict
-from dataclasses import dataclass
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-@dataclass
 class _Instruction:
-    register: str
-    increase: bool
-    value: int
-    condition_register: str
-    condition: str
-
-    @classmethod
-    def create_instruction(cls, s: str) -> "_Instruction":
+    def __init__(self, s: str) -> None:
         # pattern: register increase/decrease value 'if' condition_register condition
         buffer = s.split(' ', 5)
+        self.register = buffer[0]
+        self.increase = buffer[1] == 'inc'
+        self.value = int(buffer[2])
         # buffer[3] = 'if' is not used
-        return cls(buffer[0], buffer[1] == 'inc', int(buffer[2]), buffer[4], buffer[5])
+        self.condition_register = buffer[4]
+        self.condition = buffer[5]
 
 
-class Registers:
+class _Registers:
     _DEFAULT_REGISTER = 0
 
     def __init__(self) -> None:
@@ -65,10 +60,20 @@ class Registers:
         self._max_register = self._DEFAULT_REGISTER
 
     def get_highest_register_after_completion(self, instructions: tuple[_Instruction, ...]) -> int:
+        """
+        :param instructions: instructions how to operate the register
+        :type instructions: _Instruction
+        :return: the highest number in the register
+        :rtype: int
+        """
         self._modify_registers(instructions)
         return max(self._registers.values())
 
     def get_highest_register_during_process(self) -> int:
+        """
+        :return: the highest value a register held during operations
+        :rtype: int
+        """
         return self._max_register
 
     def _modify_registers(self, instructions: tuple[_Instruction, ...]) -> None:
@@ -79,7 +84,7 @@ class Registers:
 
 
 def _compile_data(line: str) -> _Instruction:
-    return _Instruction.create_instruction(line)
+    return _Instruction(line)
 
 
 class Puzzle(BasicPuzzle):
@@ -100,7 +105,7 @@ class Puzzle(BasicPuzzle):
             )
         )
 
-        r = Registers()
+        r = _Registers()
         self._print_test(Fd(1, r.get_highest_register_after_completion, (test_input,)))
         self._print_test(Fd(1, test_register, ('a',)))
         self._print_test(Fd(0, test_register, ('b',)))
@@ -108,7 +113,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(10, r.get_highest_register_during_process, ()))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
-        r = Registers()
+        puzzle_input = self.read_file_lines(_compile_data)
+        r = _Registers()
         self._print_result(Fd(5102, r.get_highest_register_after_completion, (puzzle_input,)))
         self._print_result(Fd(6056, r.get_highest_register_during_process, ()))

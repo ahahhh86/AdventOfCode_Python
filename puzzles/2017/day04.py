@@ -1,18 +1,15 @@
 """
 --- Day 4: High-Entropy Passphrases ---
-
 A new system policy has been put in place that requires all accounts to use a passphrase instead of simply
 a password. A passphrase consists of a series of words (lowercase letters) separated by spaces.
 
 To ensure security, a valid passphrase must contain no duplicate words.
-
 For example:
     aa bb cc dd ee is valid.
     aa bb cc dd aa is not valid - the word aa appears more than once.
     aa bb cc dd aaa is valid - aa and aaa count as different words.
 
 The system's full passphrase list is available as your puzzle input. How many passphrases are valid?
-
 
 Your puzzle answer was 383.
 
@@ -36,11 +33,10 @@ Your puzzle answer was 265.
 from collections import Counter
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-from tools.generic_functions import count_if
 
 
 def _count_valid_passphrases_part1(phrases: tuple[str, ...]) -> int:
-    return count_if(lambda phrase: len(phrase) == len(set(phrase)), phrases)
+    return sum(len(phrase) == len(set(phrase)) for phrase in phrases)
 
 
 def _count_valid_passphrases_part2(phrases: tuple[str, ...]) -> int:
@@ -52,7 +48,7 @@ def _count_valid_passphrases_part2(phrases: tuple[str, ...]) -> int:
                 return False
         return True
 
-    return count_if(_is_valid, phrases)
+    return sum(_is_valid(phrase) for phrase in phrases)
 
 
 class Puzzle(BasicPuzzle):
@@ -71,6 +67,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(0, _count_valid_passphrases_part2, ([('oiii', 'ioii', 'iioi', 'iiio',)],)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(lambda line: tuple(line.split()))
+        puzzle_input = self.read_file_lines(lambda line: tuple(line.split()))
         self._print_result(Fd(383, _count_valid_passphrases_part1, (puzzle_input,)))
         self._print_result(Fd(265, _count_valid_passphrases_part2, (puzzle_input,)))

@@ -107,7 +107,9 @@ from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
 def _compile_data(line: str) -> tuple[int, int]:
-    return tuple(int(i) for i in line.split("   "))
+    result = tuple(int(i) for i in line.split("   "))
+    assert len(result) == 2
+    return result[0], result[1]
 
 
 class _IdLists:
@@ -116,12 +118,20 @@ class _IdLists:
         self._right_list = sorted([i[1] for i in lists])
 
     def calculate_distance(self) -> int:
+        """
+        :return: distance between the elements of each list
+        :rtype: int
+        """
         distance = 0
         for left, right in zip(self._left_list, self._right_list):
             distance += abs(left - right)
         return distance
 
     def calculate_similarity_score(self) -> int:
+        """
+        :return: similarity score
+        :rtype: int
+        """
         right = Counter(self._right_list)
         similarity_score = 0
 
@@ -129,7 +139,7 @@ class _IdLists:
             try:
                 similarity_score += i * right[i]
             except KeyError:
-                pass
+                pass  # add nothing if not found right list
 
         return similarity_score
 
@@ -152,7 +162,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(31, id_list.calculate_similarity_score, ()))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file_lines(_compile_data)
         id_list = _IdLists(puzzle_input)
         self._print_result(Fd(3714264, id_list.calculate_distance, ()))
         self._print_result(Fd(18805872, id_list.calculate_similarity_score, ()))

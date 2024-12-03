@@ -109,6 +109,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(6, _count_connections, (test_input,)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file_lines(_compile_data)
         self._print_result(Fd(141, _count_connections, (puzzle_input,)))
         self._print_result(Fd(171, _count_groups, (puzzle_input,)))

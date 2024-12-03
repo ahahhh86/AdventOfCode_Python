@@ -98,6 +98,6 @@ class Puzzle(BasicPuzzle):
         )
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = ' '.join(self.read_file())  # input has multiple lines
+        puzzle_input = self.read_file()
         self._print_result(Fd(167650499, _scan_memory, (puzzle_input,)))
         self._print_result(Fd(95846796, _scan_with_conditions, (puzzle_input,)))

@@ -56,23 +56,25 @@ def _compile_data(line: str) -> list[int]:
     return [int(i) for i in line.split()]
 
 
-def _reallocate_one_block(blocks: list):
-    length = len(blocks)
-    max_memory_index = max(enumerate(blocks), key=lambda n: n[1])[0]
-    div, mod = divmod(blocks[max_memory_index], length)
-    blocks[max_memory_index] = 0
+def _reallocate_one_bank(banks: list[int]) -> None:
+    length = len(banks)
+    index_most_blocks = max(enumerate(banks), key=lambda n: n[1])[0]
+    block_div, block_mod = divmod(banks[index_most_blocks], length)
+    banks[index_most_blocks] = 0
 
+    # reallocate blocks as even as possible across all banks
     for i in range(length):
-        blocks[i] += div
-    for i in range(max_memory_index + 1, max_memory_index + mod + 1):
-        blocks[i % length] += 1
+        banks[i] += block_div
+    # reallocate remaining blocks
+    for i in range(index_most_blocks + 1, index_most_blocks + block_mod + 1):
+        banks[i % length] += 1
 
 
-def _reallocate_memory(blocks: list):
+def _reallocate_memory(banks: list[int]) -> int:
     configurations = []
-    while blocks not in configurations:
-        configurations.append(blocks[:])
-        _reallocate_one_block(blocks)
+    while banks not in configurations:
+        configurations.append(banks[:])
+        _reallocate_one_bank(banks)
     return len(configurations)
 
 
@@ -86,7 +88,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(4, _reallocate_memory, (test_input,)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file(_compile_data)
         self._print_result(Fd(3156, _reallocate_memory, (puzzle_input,)))
         # to get the length of the loop we need to be inside the loop and check when it repeats
         # so: do the same we did in part one, but after blocks is modified at part one

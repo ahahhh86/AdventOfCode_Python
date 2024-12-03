@@ -39,7 +39,7 @@ Your puzzle answer was 1469.
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-def _compile_data(line: str) -> tuple:
+def _compile_data(line: str) -> tuple[str, ...]:
     return tuple(i for i in line.split(','))
 
 
@@ -51,6 +51,11 @@ class _HexGrid:
         self._max_distance = 0
 
     def move(self) -> int:
+        """
+        moves along the directions
+        :return: distance from starting hex
+        :rtype: int
+        """
         distance = 0
         for direction in self._directions:
             distance = self._move_once(direction)
@@ -59,6 +64,10 @@ class _HexGrid:
         return distance
 
     def get_max_distance(self) -> int:
+        """
+        :return: the max distance that was entered during movement
+        :rtype: int
+        """
         return self._max_distance
 
     def _move_once(self, direction: str) -> int:
@@ -96,7 +105,7 @@ class Puzzle(BasicPuzzle):
         super().__init__(2017, 11)
 
     def _test_puzzle(self) -> None:
-        def _test_p1(directions):
+        def _test_p1(directions) -> int:
             h = _HexGrid(directions)
             return h.move()
 
@@ -106,7 +115,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(3, _test_p1, (('se', 'sw', 'se', 'sw', 'sw'),)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)[0]
+        puzzle_input = self.read_file(_compile_data)
         h = _HexGrid(puzzle_input)
         self._print_result(Fd(705, h.move, ()))
         self._print_result(Fd(1469, h.get_max_distance, ()))

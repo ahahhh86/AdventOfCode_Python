@@ -21,7 +21,6 @@ For example, consider the following list of jump offsets:
 Positive jumps ("forward") move downward; negative jumps move upward. For legibility in this example,
 these offset values will be written all on one line, with the current instruction marked in parentheses.
 The following steps would be taken before an exit is found:
-
     (0) 3  0  1  -3  - before we have taken any steps.
     (1) 3  0  1  -3  - jump with offset 0 (that is, don't jump at all). Fortunately, the instruction
 is then incremented to 1.
@@ -90,6 +89,6 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(10, _jump, (test_input, 3)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(lambda i: int(i))
+        puzzle_input = self.read_file_lines(lambda i: int(i))
         self._print_result(Fd(326618, _jump, (puzzle_input,)))
         self._print_result(Fd(21841249, _jump, (puzzle_input, 3)))

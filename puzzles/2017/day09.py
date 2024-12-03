@@ -43,7 +43,6 @@ Here are some examples of whole streams and the number of groups they contain:
 Your goal is to find the total score for all groups in your input. Each group is assigned a score which
 is one more than the score of the group that immediately contains it. (The outermost group gets a score
 of 1.)
-
     {}, score of 1.
     {{{}}}, score of 1 + 2 + 3 = 6.
     {{},{}}, score of 1 + 2 + 2 = 5.
@@ -62,7 +61,6 @@ Now, you're ready to remove the garbage.
 
 To prove you've removed it, you need to count all of the characters within the garbage. The leading and
 trailing < and > don't count, nor do any canceled characters or the ! doing the canceling.
-
     <>, 0 characters.
     <random characters>, 17 characters.
     <<<<>, 3 characters.
@@ -77,7 +75,6 @@ Your puzzle answer was 3838.
 """
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-from tools.generic_functions import count_if
 
 
 class _Stream:
@@ -88,8 +85,33 @@ class _Stream:
     _START_GROUP = '{'
     _END_GROUP = '}'
 
-    def __init__(self, stream) -> None:
+    def __init__(self, stream: list[str]) -> None:
         self._stream = list(stream)
+
+    def calculate_score(self) -> int:
+        """
+        :return: score for all groups
+        :rtype: int
+        """
+        self._remove_canceled()
+        self._remove_garbage()
+        score = 0
+        level = 0
+        for char in self._stream:
+            if char == self._START_GROUP:
+                level += 1
+            elif char == self._END_GROUP:
+                score += level
+                level -= 1
+        assert level == 0  # not all groups were closed
+        return score
+
+    def count_garbage(self) -> int:
+        """
+        :return: number of non-canceled characters within the garbage
+        :rtype: int
+        """
+        return sum(self._MARKED_GARBAGE == char for char in self._stream)
 
     def _remove_canceled(self) -> None:
         i = 0
@@ -114,23 +136,6 @@ class _Stream:
                     i += 1
             i += 1
 
-    def calculate_score(self) -> int:
-        self._remove_canceled()
-        self._remove_garbage()
-        score = 0
-        level = 0
-        for c in self._stream:
-            if c == self._START_GROUP:
-                level += 1
-            elif c == self._END_GROUP:
-                score += level
-                level -= 1
-        assert level == 0  # not all groups were closed
-        return score
-
-    def calculate_garbage(self) -> int:
-        return count_if(self._MARKED_GARBAGE.__eq__, self._stream)
-
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
@@ -144,7 +149,7 @@ class Puzzle(BasicPuzzle):
         def test_part2(s: list[str]) -> int:
             stream = _Stream(s)
             stream.calculate_score()
-            return stream.calculate_garbage()
+            return stream.count_garbage()
 
         self._print_test(Fd(1, test_part1, (list('{}'),)))
         self._print_test(Fd(6, test_part1, (list('{{{}}}'),)))
@@ -169,7 +174,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(17, test_part2, (list('{{<a!>},{<a!>},{<a!>},{<ab>}}'),)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(lambda line: list(line))[0]
+        puzzle_input = self.read_file(lambda line: list(line))
         stream = _Stream(puzzle_input)
         self._print_result(Fd(7616, stream.calculate_score, ()))
-        self._print_result(Fd(3838, stream.calculate_garbage, ()))
+        self._print_result(Fd(3838, stream.count_garbage, ()))

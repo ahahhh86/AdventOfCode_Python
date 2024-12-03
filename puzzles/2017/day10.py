@@ -113,6 +113,7 @@ Ignore any leading or trailing whitespace you might encounter.
 
 Your puzzle answer was 28e7c4360520718a5dc811d3942cf1fd.
 """
+
 from functools import reduce
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
@@ -135,15 +136,31 @@ class _ListOfNumbers:
         self._skip_size = 0
         self._lengths = lengths
 
-    def run(self, count: int = 1):
+    def run(self, count: int = 1) -> None:
+        """
+        mutates the list count times
+        :param count: number of times to mutate the list
+        :type count: int
+        :return: None
+        :rtype: None
+        """
         for _ in range(count):
             for i in self._lengths:
                 self._get_new_list(i)
 
-    def multiply_first_two(self):
+    def multiply_first_two(self) -> int:
+        """
+        :return: product of the first two elements of the list
+        :rtype: int
+        """
         return self._list[0] * self._list[1]
 
-    def get_hex(self):
+    def get_hex(self) -> str:
+        """
+        :return: hex representation of the dense hash
+        :rtype: str
+        """
+
         def _xor_of_list(l: list[int]) -> int:
             return reduce(lambda a, b: a ^ b, l)
 
@@ -181,15 +198,15 @@ class Puzzle(BasicPuzzle):
         super().__init__(2017, 10)
 
     def _test_puzzle(self) -> None:
-        def _test_p1(lengths):
-            l = _ListOfNumbers(lengths, 5)
-            l.run()
-            return l.multiply_first_two()
+        def _test_p1(lengths) -> int:
+            numbers = _ListOfNumbers(lengths, 5)
+            numbers.run()
+            return numbers.multiply_first_two()
 
-        def _test_p2(lengths):
-            l = _ListOfNumbers(_compile_data_part2(lengths))
-            l.run(64)
-            return l.get_hex()
+        def _test_p2(lengths) -> str:
+            numbers = _ListOfNumbers(_compile_data_part2(lengths))
+            numbers.run(64)
+            return numbers.get_hex()
 
         self._print_test(Fd(12, _test_p1, ((3, 4, 1, 5),)))
         print()
@@ -199,12 +216,12 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd('63960835bcdc130f0b66d7ff4f6a5a8e', _test_p2, ('1,2,4',)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data_part1)[0]
-        l = _ListOfNumbers(puzzle_input)
-        l.run()
-        self._print_result(Fd(6952, l.multiply_first_two, ()))
+        puzzle_input = self.read_file(_compile_data_part1)
+        numbers = _ListOfNumbers(puzzle_input)
+        numbers.run()
+        self._print_result(Fd(6952, numbers.multiply_first_two, ()))
 
-        puzzle_input2 = _compile_data_part2(self.read_file()[0])
-        l = _ListOfNumbers(puzzle_input2)
-        l.run(64)
-        self._print_result(Fd("28e7c4360520718a5dc811d3942cf1fd", l.get_hex, ()))
+        puzzle_input2 = self.read_file(_compile_data_part2)
+        numbers = _ListOfNumbers(puzzle_input2)
+        numbers.run(64)
+        self._print_result(Fd("28e7c4360520718a5dc811d3942cf1fd", numbers.get_hex, ()))

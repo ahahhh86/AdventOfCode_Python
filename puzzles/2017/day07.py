@@ -1,4 +1,4 @@
-"""
+r"""
 --- Day 7: Recursive Circus ---
 Wandering further through the circuits of the computer, you come upon a tower of programs that have gotten
 themselves into a bit of trouble. A recursive algorithm has gotten out of hand, and now they're balanced
@@ -89,31 +89,25 @@ Your puzzle answer was 1993.
 """
 
 import re
-from dataclasses import dataclass
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
 
-@dataclass
 class _Tower:
-    name: str
-    own_weight: int
-    children: list
-    parent: str = ''
-    total_weight: int = None
+    # examples:
+    # ktlj (57)
+    # fwft (72) -> ktlj, cntj, xhth
+    # pattern: name (weight) -> children
+    _INPUT_PATTERN = re.compile(r"(\w+) \((\d+)\)(?: -> (.+))?")
 
-    _INPUT_PATTERN = re.compile(r'(\w+) \((\d+)\)(?: -> (.+))?')
-
-    def __str__(self) -> str:
-        return f'{self.name} -> {self.own_weight} / {self.total_weight} -> {self.children}'
-
-    @classmethod
-    def create_tower(cls, s: str) -> "_Tower":
-        # pattern: name weight -> children
-        matcher = re.match(cls._INPUT_PATTERN, s)
-        name, weight = matcher.groups()[:2]
-        children = matcher.group(3).split(', ') if matcher.group(3) else ()
-        return cls(name, int(weight), children)
+    def __init__(self, s: str) -> None:
+        matcher = re.match(self._INPUT_PATTERN, s)
+        # pattern: name (weight) -> children
+        self.name = matcher.group(1)
+        self.own_weight = int(matcher.group(2))
+        self.children = matcher.group(3).split(", ") if matcher.group(3) else ()
+        self.parent = ""
+        self.total_weight: int | None = None
 
 
 class _Towers:
@@ -122,21 +116,31 @@ class _Towers:
         self._first_parent = None
 
     def find_first_parent(self) -> str:
+        """
+        :return: name of tower with no parent
+        :rtype: str
+        """
         self._add_parents()
-        tower = next(iter(self._towers.values()))
-        while tower.parent:
-            tower = self._towers[tower.parent]
-        self._first_parent = tower.name
-        return tower.name
+        for tower in self._towers.values():
+            if tower.parent == "":
+                self._first_parent = tower.name
+                return self._first_parent
+        raise AssertionError("No lowest tower found")
 
-    def adjust_unbalanced(self):
+    def adjust_unbalanced(self) -> int:
+        """
+        :return: the weight required to balance the unbalanced tower
+        :rtype: int
+        """
         name = self._find_unbalanced()
         children = [self._towers[n] for n in self._towers[name].children]
-        children.sort(key=lambda t: t.total_weight)
-        if children[0].total_weight == children[1].total_weight:
+        assert len(children) > 2
+        children.sort(key=lambda t: t.total_weight)  # this way either the first one or the last one is unbalanced
+
+        if children[0].total_weight == children[1].total_weight:  # last unbalanced
             difference = children[0].total_weight - children[-1].total_weight
             adjusted_weight = children[-1].own_weight + difference
-        else:
+        else:  # first unbalanced
             difference = children[-1].total_weight - children[0].total_weight
             adjusted_weight = children[0].own_weight + difference
         return adjusted_weight
@@ -166,19 +170,19 @@ class _Towers:
         return tower.total_weight
 
     def _find_unbalanced(self) -> str:
-        def are_children_balanced(children: list[str]) -> bool:
-            default = self._towers[children[0]].total_weight
-            return all(self._towers[name].total_weight == default for name in children)
+        def _are_children_balanced(children: list[str]) -> bool:
+            default_weight = self._towers[children[0]].total_weight
+            return all(self._towers[name].total_weight == default_weight for name in children)
 
         self._calculate_total_weight()
         for tower in self._towers.values():
-            if tower.children and not are_children_balanced(tower.children):
+            if tower.children and not _are_children_balanced(tower.children):
                 return tower.name
         raise AssertionError("No matching tower")
 
 
-def _compile_data(line: str) -> _Tower:
-    return _Tower.create_tower(line)
+def _compile_input(line: str) -> _Tower:
+    return _Tower(line)
 
 
 class Puzzle(BasicPuzzle):
@@ -188,7 +192,7 @@ class Puzzle(BasicPuzzle):
     def _test_puzzle(self) -> None:
         puzzle_test = list(
             map(
-                _compile_data,
+                _compile_input,
                 [
                     'pbga (66)',
                     'xhth (57)',
@@ -224,7 +228,7 @@ class Puzzle(BasicPuzzle):
         self._print_test(Fd(60, t.adjust_unbalanced, ()))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file(_compile_data)
+        puzzle_input = self.read_file_lines(_compile_input)
         t = _Towers(puzzle_input)
         self._print_result(Fd('hlqnsbe', t.find_first_parent, ()))
         self._print_result(Fd(1993, t.adjust_unbalanced, ()))
