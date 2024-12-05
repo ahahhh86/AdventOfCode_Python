@@ -1,7 +1,6 @@
 """
 """
-
-from black.trans import defaultdict
+from collections import defaultdict
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
