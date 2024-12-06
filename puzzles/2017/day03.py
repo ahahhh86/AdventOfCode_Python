@@ -54,29 +54,12 @@ Your puzzle answer was 349975.
 from typing import Generator
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-from tools.point import Point
+from tools.point import Point, Directions
 
 
 class _Spiral:
-    _RIGHT = 'right'
-    _LEFT = 'left'
-    _UP = 'top'
-    _DOWN = 'down'
     _START_POS = Point(0, 0)
     _INVALID_SUM = -1
-    _ADJACENT_POSITIONS = (
-        Point(-1, -1), Point(0, -1), Point(1, -1),
-        Point(-1, 0), Point(1, 0),  # (0, 0) is excluded
-        Point(-1, 1), Point(0, 1), Point(1, 1),
-    )
-
-    @staticmethod
-    def _direction_generator() -> Generator[str, None, None]:
-        while True:
-            yield _Spiral._RIGHT
-            yield _Spiral._UP
-            yield _Spiral._LEFT
-            yield _Spiral._DOWN
 
     @staticmethod
     def _step_generator() -> Generator[int, None, None]:
@@ -110,19 +93,6 @@ class _Spiral:
         return self._first_sum_larger_than_field_count
 
     def _create_spiral(self) -> None:
-        def _next_position(d: str) -> None:
-            match d:
-                case self._RIGHT:
-                    self._position += (+1, 0)
-                case self._LEFT:
-                    self._position += (-1, 0)
-                case self._UP:
-                    self._position += (0, -1)
-                case self._DOWN:
-                    self._position += (0, +1)
-                case _:
-                    raise ValueError(f"invalid input: {d}")
-
         def _add_sum_of_adjacent() -> None:
             # we do not need any more sums after we found one big enough
             # makes the program a lot faster
@@ -130,7 +100,7 @@ class _Spiral:
                 return
 
             adjacent_sum = 0
-            for pos in self._ADJACENT_POSITIONS:
+            for pos in Directions.ADJACENT_8:
                 try:
                     adjacent_sum += self._fields[self._position + pos]
                 except KeyError:
@@ -140,13 +110,13 @@ class _Spiral:
             if adjacent_sum >= self._field_count:
                 self._first_sum_larger_than_field_count = adjacent_sum
 
-        generate_direction = self._direction_generator()
+        direction = Directions.SOUTH
         generate_steps = self._step_generator()
         count = 1
 
-        # loop over the directions right, up, left, down, right, ...
+        # loop over the directions east, north, west, south, east, ...
         while True:
-            direction = next(generate_direction)
+            direction = Directions.turn_left_90_deg(direction)
             steps = next(generate_steps)
 
             # loop over each step in one direction
@@ -154,7 +124,7 @@ class _Spiral:
                 if count >= self._field_count:
                     return
                 count += 1
-                _next_position(direction)
+                self._position += direction
                 _add_sum_of_adjacent()
 
 

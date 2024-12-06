@@ -80,7 +80,7 @@ Your puzzle answer was 1936.
 """
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-from tools.point import Point
+from tools.point import Point, Directions
 
 
 def _compile_data(line: str) -> tuple[str, ...]:
@@ -88,15 +88,6 @@ def _compile_data(line: str) -> tuple[str, ...]:
 
 
 class _Matrix:
-    _WORD_DIRECTIONS = (
-        Point(-1, -1), Point(0, -1), Point(1, -1),
-        Point(-1, 0), Point(1, 0),  # (0, 0) is excluded
-        Point(-1, 1), Point(0, 1), Point(1, 1),
-    )
-    _CROSS_DIRECTIONS = (
-        Point(-1, -1), Point(1, -1),
-        Point(-1, 1), Point(1, 1),
-    )
     _WORD = "XMAS"
     _WORD_LENGTH = len(_WORD)
     _CROSS = "MAS"
@@ -109,23 +100,23 @@ class _Matrix:
 
     def count_words(self) -> int:
         found = 0
-        for i in range(len(self._matrix)):
-            for j in range(len(self._matrix[i])):
-                for direction in self._WORD_DIRECTIONS:
+        for i in range(self._matrix_size.x):
+            for j in range(self._matrix_size.y):
+                for direction in Directions.ADJACENT_8:
                     found += self._is_word(Point(i, j), direction)
         return found
 
     def count_cross(self) -> int:
         found = 0
-        for i in range(1, len(self._matrix) - 1):
-            for j in range(1, len(self._matrix[i]) - 1):
+        for i in range(1, self._matrix_size.x - 1):
+            for j in range(1, self._matrix_size.y - 1):
                 found += self._is_cross(Point(i, j))
         return found
 
     def _is_word(self, pos: Point, direction: Point, index: int = 0) -> bool:
         # if not in bound return False
         # do not use try: -1 would be a valid index
-        if not (0 <= pos.x < self._matrix_size.x and 0 <= pos.y < self._matrix_size.y):
+        if not pos.is_in_bounds(Point(0, 0), self._matrix_size):
             return False
 
         value = self._matrix[pos.x][pos.y]
@@ -139,13 +130,13 @@ class _Matrix:
 
     def _is_cross(self, pos: Point) -> bool:
         # skip first and last line, because pos should be in the center of the X
-        if not (0 < pos.x < self._matrix_size.x - 1 and 0 < pos.y < self._matrix_size.y - 1):
+        if not pos.is_in_bounds(Point(1, 1), self._matrix_size - (1, 1)):
             return False
 
         if self._matrix[pos.x][pos.y] != self._CROSS[1]:
             return False
 
-        corners_pos = [pos + p for p in self._CROSS_DIRECTIONS]
+        corners_pos = [pos + p for p in Directions.CROSS]
         corners = [self._matrix[p.x][p.y] for p in corners_pos]
 
         # this may not work with all words, but works with "MAS"

@@ -208,36 +208,24 @@ could you choose for this obstruction?
 Your puzzle answer was 1711.
 """
 
-
 from copy import deepcopy
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
-from tools.point import Point
+from tools.point import Directions, Point
 
 
 class _LabArea:
     class _Guard:
-        _DIRECTION_ORDER = {
-            Point(0, -1): Point(1, 0),
-            Point(1, 0): Point(0, 1),
-            Point(0, 1): Point(-1, 0),
-            Point(-1, 0): Point(0, -1)
-        }
-
         # The example and my puzzle input are both north, so it is the default atm
-        def __init__(self, position: Point, direction: Point = Point(0, -1)) -> None:
+        def __init__(self, position: Point, direction: Point = Directions.NORTH) -> None:
             self.position = position
             self.direction = direction
 
         def turn(self) -> None:
-            self.direction = self._DIRECTION_ORDER[self.direction]
+            self.direction = Directions.turn_right_90_deg(self.direction)
 
-        def print(self) -> None:
-            print(f"{self.position} {self.direction}")
-
-        def __iter__(self) -> Point:
-            yield self.position
-            yield self.direction
+        def tuple(self) -> tuple[Point, Point]:
+            return self.position, self.direction
 
 
     _OBSTRUCTION = "#"
@@ -271,7 +259,7 @@ class _LabArea:
 
     def _is_guard_looping(self) -> bool:
         guard = deepcopy(self._guard_start)
-        steps = {tuple(guard)}
+        steps = {guard.tuple()}
         while step := self._move_once(guard):
             if step in steps:
                 return True
@@ -286,23 +274,13 @@ class _LabArea:
 
     def _move_once(self, guard: _Guard) -> tuple[Point, Point] | None:
         new_position = guard.position + guard.direction
-        if not (0 <= new_position.x < self._area_size.x and 0 <= new_position.y < self._area_size.y):
+        if not new_position.is_in_bounds(Point(0, 0), self._area_size):
             return None
         if self._area[new_position.y][new_position.x] != self._OBSTRUCTION:
             guard.position = new_position
         else:
             guard.turn()
-        return tuple(guard)
-
-    # def print(self):
-    #     # pr = deepcopy(self._area)
-    #     pr = [list(p) for p in self._area]
-    #
-    #     for pos in self._steps:
-    #         pr[pos.y][pos.x] = "X"
-    #
-    #     for i in pr:
-    #         print(*i, sep="")
+        return guard.tuple()
 
 
 class Puzzle(BasicPuzzle):
@@ -328,4 +306,4 @@ class Puzzle(BasicPuzzle):
         puzzle_input = list(self.read_file_lines())
         area = _LabArea(puzzle_input)
         self._print_result(Fd(5153, area.calculate_when_guard_left, ()))
-        self._print_result(Fd(1711, area.count_loops, ()))  # slow for me ~25s
+        # self._print_result(Fd(1711, area.count_loops, ()))  # slow for me ~25s
