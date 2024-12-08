@@ -306,4 +306,4 @@ class Puzzle(BasicPuzzle):
         puzzle_input = list(self.read_file_lines())
         area = _LabArea(puzzle_input)
         self._print_result(Fd(5153, area.calculate_when_guard_left, ()))
-        # self._print_result(Fd(1711, area.count_loops, ()))  # slow for me ~25s
+        # self._print_result(Fd(1711, area.count_loops, ()))  # slow for me ~25s, TODO pake parallel
