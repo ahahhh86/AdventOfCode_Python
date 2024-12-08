@@ -168,5 +168,4 @@ class Puzzle(BasicPuzzle):
 
     def _solve_puzzle(self) -> None:
         puzzle_input = list(self.read_file_lines(_compile_data))
-        self._print_result(Fd(1985268524462, _sum_parallel, (puzzle_input,)))  # takes a few minutes
-        winsound.Beep(666, 750)
+        self._print_result(Fd(1985268524462, _sum_parallel, (puzzle_input[:100],)))  # takes a few minutes

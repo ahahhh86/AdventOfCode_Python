@@ -26,26 +26,13 @@ class FunctionData:
 class _Timer:
     def __enter__(self) -> '_Timer':
         self._time = perf_counter_ns()
+        self.elapsed = 0
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._time = perf_counter_ns() - self._time
-
-    def elapsed_ms(self) -> int:
-        """
-        :return: time since timer was started
-        :rtype: int in ms
-        """
         ns_to_ms = 1_000_000
-        return self._time // ns_to_ms
-
-    def alert(self) -> None:
-        """
-        makes a beep if the funktion takes some time, so you do not need to stare at the screen
-        """
-        alert_after = 30_000_000  # 20s
-        if self._time > alert_after:
-            winsound.Beep(660, 750)
+        self.elapsed = self._time // ns_to_ms
 
 
 class BasicPuzzle(ABC):
@@ -58,6 +45,7 @@ class BasicPuzzle(ABC):
     _PASS_COLOR = 'green'
     _FAIL_COLOR = 'red'
     _RESULT_FORMAT = '{:14} | {:>32} | {:>32} | {:>6} ms'
+    _ALERT_TIME = 30_000  # in ms,
 
     def __init__(self, year: int, day: int):
         print(f'Year {year:04d} Day {day:02d}')
@@ -109,12 +97,16 @@ class BasicPuzzle(ABC):
             str_colored(
                 cls._RESULT_FORMAT.format(
                     f'{start_str}{number:02d}: {success_str}',
-                    result, fn.expected, timer.elapsed_ms(),
+                    result, fn.expected, timer.elapsed,
                 ),
                 color
             )
         )
-        timer.alert()
+
+        # if a function takes longer: make acoustic signal, so you do not need to stare at the screen
+        if timer.elapsed > cls._ALERT_TIME:
+            winsound.Beep(660, 750)
+
         return success
 
     @classmethod
