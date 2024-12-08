@@ -2,7 +2,10 @@
 
 """
 import itertools
+import math
+import winsound
 from dataclasses import dataclass
+from concurrent import futures
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 
@@ -16,7 +19,10 @@ class _Equation:
 def _compile_data(line: str) -> _Equation:
     result, operands = line.split(": ")
     result = int(result)
+    assert result > 0
     operands = tuple(int(i) for i in operands.split())
+    for i in operands:
+        assert i > 0
     return _Equation(result, operands)
 
 
@@ -27,28 +33,38 @@ _OPERATORS = (
 
 
 def _calculate(operands: tuple[int, ...], operators: list):
-    assert len(operators) + 1 == len(operands)
+    # assert len(operators) + 1 == len(operands)
     result = operands[0]
     for i in range(len(operators)):
         result = _OPERATORS[operators[i]](result, operands[i + 1])
     return result
 
 
-def _is_correct(equation: _Equation) -> bool:
+def _get_correct(equation: _Equation) -> int:
+    sum_ = sum(equation.operands)
+    if equation.result == sum_:
+        return equation.result
+
+    prod = math.prod(equation.operands)
+    if equation.result == prod:
+        return equation.result
+
     operator_length = len(equation.operands) - 1
-    for i in range(operator_length + 1):
-        operators = list(itertools.repeat(1, i)) + list(itertools.repeat(0, operator_length - i))
+    for i in range(1, operator_length):
+        operators = (
+                tuple(itertools.repeat(1, i)) +
+                tuple(itertools.repeat(0, operator_length - i))
+        )
         for o in set(itertools.permutations(operators)):
             if equation.result == _calculate(equation.operands, o):
-                return True
-    return False
+                return equation.result
+    return 0
 
-def _sum_correct(equations: tuple[_Equation, ...]) -> int:
-    result = 0
-    for equation in equations:
-        if _is_correct(equation):
-            result += equation.result
-    return result
+def _sum_parallel(equations: tuple[_Equation, ...]) -> int:
+    with futures.ProcessPoolExecutor() as e:
+        res = e.map(_get_correct, equations)  # chunksize>1 seems to make the program slower
+    return sum(res)
+
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
@@ -72,17 +88,18 @@ class Puzzle(BasicPuzzle):
 
             )
         )
-        self._print_test(Fd(True, _is_correct, (test_input[0],)))
-        self._print_test(Fd(True, _is_correct, (test_input[1],)))
-        self._print_test(Fd(False, _is_correct, (test_input[2],)))
-        self._print_test(Fd(False, _is_correct, (test_input[3],)))
-        self._print_test(Fd(False, _is_correct, (test_input[4],)))
-        self._print_test(Fd(False, _is_correct, (test_input[5],)))
-        self._print_test(Fd(False, _is_correct, (test_input[6],)))
-        self._print_test(Fd(False, _is_correct, (test_input[7],)))
-        self._print_test(Fd(True, _is_correct, (test_input[8],)))
-        self._print_test(Fd(3749, _sum_correct, (test_input,)))
+        self._print_test(Fd(190, _get_correct, (test_input[0],)))
+        self._print_test(Fd(3267, _get_correct, (test_input[1],)))
+        self._print_test(Fd(0, _get_correct, (test_input[2],)))
+        self._print_test(Fd(0, _get_correct, (test_input[3],)))
+        self._print_test(Fd(0, _get_correct, (test_input[4],)))
+        self._print_test(Fd(0, _get_correct, (test_input[5],)))
+        self._print_test(Fd(0, _get_correct, (test_input[6],)))
+        self._print_test(Fd(0, _get_correct, (test_input[7],)))
+        self._print_test(Fd(292, _get_correct, (test_input[8],)))
+        self._print_test(Fd(3749, _sum_parallel, (test_input,)))
 
     def _solve_puzzle(self) -> None:
-        puzzle_input = self.read_file_lines(_compile_data)
-        # self._print_result(Fd(3749, _sum_correct, (puzzle_input,)))  # too slow
+        puzzle_input = list(self.read_file_lines(_compile_data))
+        self._print_result(Fd(1985268524462, _sum_parallel, (puzzle_input,)))
+        winsound.Beep(666, 750)
