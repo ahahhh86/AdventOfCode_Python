@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter_ns
 
+import winsound
+
 from tools.colors import print_colored, str_colored
 
 
@@ -36,6 +38,14 @@ class _Timer:
         """
         ns_to_ms = 1_000_000
         return self._time // ns_to_ms
+
+    def alert(self) -> None:
+        """
+        makes a beep if the funktion takes some time, so you do not need to stare at the screen
+        """
+        alert_after = 30_000_000  # 20s
+        if self._time > alert_after:
+            winsound.Beep(660, 750)
 
 
 class BasicPuzzle(ABC):
@@ -104,6 +114,7 @@ class BasicPuzzle(ABC):
                 color
             )
         )
+        timer.alert()
         return success
 
     @classmethod
