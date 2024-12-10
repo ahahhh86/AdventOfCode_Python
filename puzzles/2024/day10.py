@@ -158,6 +158,7 @@ of paper and is using them to mark trailheads on your topographic map. What is t
 of all trailheads?
 
 """
+from collections import Counter
 
 from tools.basic_puzzle import BasicPuzzle, FunctionData as Fd
 from tools.point import Directions, Point
@@ -174,9 +175,14 @@ class _Map:
         self._map = map_
         self._map_size = Point(len(self._map[0]), len(self._map))
         self._trailheads = self._find_trailheads()
+        self._trails = []
 
     def sum_trailhead_score(self) -> int:
         return sum(self._calculate_trailhead_score(head) for head in self._trailheads)
+
+    def sum_trailhead_rating(self) -> int:
+        return 0
+#        return sum(self._calculate_trailhead_rating(trail) for trail in self._trails)
 
     def _find_trailheads(self) -> tuple[Point, ...]:
         result = []
@@ -191,15 +197,10 @@ class _Map:
                     break
         return tuple(result)
 
-    def _calculate_trailhead_score(self, head: Point) -> int:
-        positions = set()
-        self._find_next_waypoints(head, positions)
-        return sum(1 for p in positions if self._map[p.y][p.x] == 9)
-
+    # TODO: maybe include path_counter here
     def _find_next_waypoints(self, pos: Point, positions: set[Point]):
         if pos in positions:
             return
-
         positions.add(pos)
         new_positions = []
         for new_pos in Directions.ADJACENT_4:
@@ -213,13 +214,23 @@ class _Map:
         for p in new_positions:
             self._find_next_waypoints(p, positions)
 
+    def _calculate_trailhead_score(self, head: Point) -> int:
+        positions = set()
+        self._find_next_waypoints(head, positions)
+        self._trails.append(positions)
+        return sum(1 for p in positions if self._map[p.y][p.x] == 9)
+
+    # def _calculate_trailhead_rating(self, trail: set[Point]) -> int:
+    #     heights = [self._map[p.y][p.x] for p in trail]
+    #     return max(Counter(heights).values())
+
 
 class Puzzle(BasicPuzzle):
     def __init__(self) -> None:
         super().__init__(2024, 10)
 
     def _test_puzzle(self) -> None:
-        test_input1 = tuple(
+        test_input = tuple(
             map(
                 _compile_data,
                 ("0123",
@@ -228,7 +239,10 @@ class Puzzle(BasicPuzzle):
                  "9876",)
             )
         )
-        test_input2 = tuple(
+        m = _Map(test_input)
+        self._print_test(Fd(1, m.sum_trailhead_score, ()))
+
+        test_input = tuple(
             map(
                 _compile_data,
                 ("...0...",
@@ -240,7 +254,10 @@ class Puzzle(BasicPuzzle):
                  "9.....9",)
             )
         )
-        test_input3 = tuple(
+        m = _Map(test_input)
+        self._print_test(Fd(2, m.sum_trailhead_score, ()))
+
+        test_input = tuple(
             map(
                 _compile_data,
                 ("..90..9",
@@ -252,7 +269,10 @@ class Puzzle(BasicPuzzle):
                  "987....",)
             )
         )
-        test_input4 = tuple(
+        m = _Map(test_input)
+        self._print_test(Fd(4, m.sum_trailhead_score, ()))
+
+        test_input = tuple(
             map(
                 _compile_data,
                 ("10..9..",
@@ -264,7 +284,10 @@ class Puzzle(BasicPuzzle):
                  ".....01",)
             )
         )
-        test_input5 = tuple(
+        m = _Map(test_input)
+        self._print_test(Fd(3, m.sum_trailhead_score, ()))
+
+        test_input = tuple(
             map(
                 _compile_data,
                 ("89010123",
@@ -277,16 +300,59 @@ class Puzzle(BasicPuzzle):
                  "10456732",)
             )
         )
-        m = _Map(test_input1)
-        self._print_test(Fd(1, m.sum_trailhead_score, ()))
-        m = _Map(test_input2)
-        self._print_test(Fd(2, m.sum_trailhead_score, ()))
-        m = _Map(test_input3)
-        self._print_test(Fd(4, m.sum_trailhead_score, ()))
-        m = _Map(test_input4)
-        self._print_test(Fd(3, m.sum_trailhead_score, ()))
-        m = _Map(test_input5)
+        m = _Map(test_input)
         self._print_test(Fd(36, m.sum_trailhead_score, ()))
+
+        print()
+
+        self._print_test(Fd(81, m.sum_trailhead_rating, ()))
+
+        test_input = tuple(
+            map(
+                _compile_data,
+                (".....0.",
+                 "..4321.",
+                 "..5..2.",
+                 "..6543.",
+                 "..7..4.",
+                 "..8765.",
+                 "..9....",)
+            )
+        )
+        m = _Map(test_input)
+        m.sum_trailhead_score()
+        self._print_test(Fd(3, m.sum_trailhead_rating, ()))
+
+        test_input = tuple(
+            map(
+                _compile_data,
+                ("..90..9",
+                 "...1.98",
+                 "...2..7",
+                 "6543456",
+                 "765.987",
+                 "876....",
+                 "987....",)
+            )
+        )
+        m = _Map(test_input)
+        m.sum_trailhead_score()
+        self._print_test(Fd(13, m.sum_trailhead_rating, ()))
+
+        test_input = tuple(
+            map(
+                _compile_data,
+                ("012345",
+                 "123456",
+                 "234567",
+                 "345678",
+                 "4.6789",
+                 "56789.",)
+            )
+        )
+        m = _Map(test_input)
+        m.sum_trailhead_score()
+        self._print_test(Fd(227, m.sum_trailhead_rating, ()))
 
     def _solve_puzzle(self) -> None:
         puzzle_input = self.read_file_lines(_compile_data)
