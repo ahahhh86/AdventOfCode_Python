@@ -1,6 +1,9 @@
 """
 main module
 """
+# for notepad++: find=(?<=.{100})\s, replace=$0\r\n to wrap long lines
+
+
 import importlib
 
 
@@ -23,4 +26,4 @@ def solve_puzzle(year: int, day: int) -> None:
 
 
 if __name__ == '__main__':
-    solve_puzzle(2024, 9)
+    solve_puzzle(2024, 10)
